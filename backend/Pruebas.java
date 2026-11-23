@@ -3,9 +3,6 @@ package backend;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Batería de pruebas automáticas del grafo ponderado.
- */
 public class Pruebas {
 
     private interface Operacion {
@@ -16,171 +13,209 @@ public class Pruebas {
         StringBuilder sb = new StringBuilder();
         int[] cont = new int[2];
 
-        sb.append("===== PRUEBAS DE FUNCIONAMIENTO =====\n");
+        sb.append("===== PRUEBAS DE FUNCIONAMIENTO - ACTIVIDAD 3.3 =====").append('\n');
 
-        // 1. Crear grafo vacío
         GrafoPonderado g = new GrafoPonderado();
+
         registrar(
                 sb,
                 cont,
                 "Crear grafo vacío",
-                g.estaVacio() && g.cantidadVertices() == 0 && g.cantidadAristas() == 0
+                g.estaVacio()
+                        && g.cantidadVertices() == 0
+                        && g.cantidadAristas() == 0
         );
 
-        // 2. Insertar varios vértices
-        g.agregarVertice(new Vertice("1", "CD Norte", "Centro de Distribución", "Norte", 150));
-        g.agregarVertice(new Vertice("2", "Terminal Sur", "Terminal", "Sur", 80));
-        g.agregarVertice(new Vertice("3", "Almacén Este", "Almacén", "Este", 120));
+        agregarVertices(g, "1", "2", "3", "4", "5", "6", "7", "8");
 
         registrar(
                 sb,
                 cont,
-                "Insertar varios vértices con IDs diferentes",
-                g.cantidadVertices() == 3
+                "Insertar 8 vértices con IDs diferentes",
+                g.cantidadVertices() == 8
         );
 
-        // 3. Intentar insertar ID duplicado
         registrar(
                 sb,
                 cont,
                 "Rechazar identificador duplicado",
                 captura(() -> {
-                    g.agregarVertice(new Vertice("1", "Duplicado", "Terminal", "Norte", 10));
+                    g.agregarVertice(
+                            new Vertice("1", "Duplicado", "Terminal", "Norte", 10)
+                    );
                 })
         );
 
-        // 4. Conectar vértices con aristas
-        g.agregarArista("1", "2", 12.5);
-        g.agregarArista("2", "3", 7.0);
-        g.agregarArista("1", "3", 20.0);
+        g.agregarArista("1", "2", 4);
+        g.agregarArista("1", "3", 3);
+        g.agregarArista("1", "4", 2);
+        g.agregarArista("2", "5", 1);
+        g.agregarArista("3", "5", 2);
+        g.agregarArista("4", "6", 1);
+        g.agregarArista("5", "7", 2);
+        g.agregarArista("6", "7", 3);
+        g.agregarArista("7", "8", 1);
 
-        double[][] m = g.getMatrizAdyacencia();
+        double[][] matriz = g.getMatrizAdyacencia();
 
         registrar(
                 sb,
                 cont,
-                "Conectar vértices con aristas y pesos",
-                g.cantidadAristas() == 3 && m[0][1] == 12.5 && m[1][2] == 7.0
+                "Conectar 8 nodos con aristas y generar matriz",
+                g.cantidadAristas() == 9
+                        && matriz.length == 8
+                        && matriz[0][1] == 4.0
+                        && matriz[6][7] == 1.0
         );
 
-        // 5. Buscar existente e inexistente
         registrar(
                 sb,
                 cont,
                 "Buscar vértice existente e inexistente",
-                g.buscarVertice("2") != null && g.buscarVertice("99") == null
+                g.buscarVertice("5") != null
+                        && g.buscarVertice("99") == null
         );
 
-        // 6. Eliminar vértice aislado
-        g.agregarVertice(new Vertice("4", "Cliente A", "Cliente", "Oeste", 10));
-        g.eliminarVertice("4");
+        g.agregarVertice(
+                new Vertice("9", "Cliente aislado", "Cliente", "Sur", 5)
+        );
+
+        g.eliminarVertice("9");
 
         registrar(
                 sb,
                 cont,
                 "Eliminar vértice aislado",
-                !g.existeVertice("4") && g.cantidadVertices() == 3
+                !g.existeVertice("9")
+                        && g.cantidadVertices() == 8
         );
 
-        // 7. Eliminar vértice con aristas conectadas
         GrafoPonderado cascada = new GrafoPonderado();
-        agregarVertices(cascada, "10", "20", "30");
 
-        cascada.agregarArista("10", "20", 5);
-        cascada.agregarArista("30", "10", 6);
+        agregarVertices(
+                cascada,
+                "1", "2", "3", "4", "5", "6", "7", "8"
+        );
 
-        cascada.eliminarVertice("10");
+        cascada.agregarArista("1", "2", 1);
+        cascada.agregarArista("1", "3", 1);
+        cascada.agregarArista("2", "5", 1);
+        cascada.agregarArista("3", "5", 1);
+        cascada.agregarArista("4", "5", 1);
+        cascada.agregarArista("5", "6", 1);
+        cascada.agregarArista("5", "7", 1);
+        cascada.agregarArista("6", "8", 1);
+        cascada.agregarArista("7", "8", 1);
+
+        cascada.eliminarVertice("5");
 
         registrar(
                 sb,
                 cont,
                 "Eliminar vértice con aristas conectadas (cascada)",
-                !cascada.existeVertice("10") && cascada.cantidadAristas() == 0
+                !cascada.existeVertice("5")
+                        && cascada.cantidadAristas() == 4
         );
 
-        // 8. BFS y DFS
-        GrafoPonderado recorridos = new GrafoPonderado();
-        agregarVertices(recorridos, "1", "2", "3", "4");
-
-        recorridos.agregarArista("1", "2", 1);
-        recorridos.agregarArista("1", "3", 1);
-        recorridos.agregarArista("2", "4", 1);
-        recorridos.agregarArista("3", "4", 1);
-
-        List<String> bfs = recorridos.bfs("1");
-        List<String> dfs = recorridos.dfs("1");
+        List<String> bfs = g.bfs("1");
+        List<String> dfs = g.dfs("1");
 
         registrar(
                 sb,
                 cont,
-                "BFS desde el nodo 1",
-                bfs.equals(Arrays.asList("1", "2", "3", "4"))
+                "BFS desde el nodo 1 en grafo de 8 nodos",
+                bfs.equals(
+                        Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8")
+                )
         );
 
         registrar(
                 sb,
                 cont,
-                "DFS desde el nodo 1",
-                dfs.equals(Arrays.asList("1", "2", "4", "3"))
+                "DFS desde el nodo 1 en grafo de 8 nodos",
+                dfs.equals(
+                        Arrays.asList("1", "2", "5", "7", "8", "3", "4", "6")
+                )
         );
 
-        // 9. Conectividad fuerte
         GrafoPonderado fuerte = new GrafoPonderado();
-        agregarVertices(fuerte, "1", "2", "3");
+
+        agregarVertices(
+                fuerte,
+                "1", "2", "3", "4", "5", "6", "7", "8"
+        );
 
         fuerte.agregarArista("1", "2", 1);
         fuerte.agregarArista("2", "3", 1);
-        fuerte.agregarArista("3", "1", 1);
+        fuerte.agregarArista("3", "4", 1);
+        fuerte.agregarArista("4", "5", 1);
+        fuerte.agregarArista("5", "6", 1);
+        fuerte.agregarArista("6", "7", 1);
+        fuerte.agregarArista("7", "8", 1);
+        fuerte.agregarArista("8", "1", 1);
 
         registrar(
                 sb,
                 cont,
-                "Conectividad: fuertemente conectado",
+                "Conectividad: fuertemente conectado (8 nodos)",
                 fuerte.evaluarConectividad().equals("Fuertemente conectado")
         );
 
-        // 10. Conectividad débil
-        GrafoPonderado debil = new GrafoPonderado();
-        agregarVertices(debil, "1", "2", "3");
-
-        debil.agregarArista("1", "2", 1);
-        debil.agregarArista("2", "3", 1);
-
         registrar(
                 sb,
                 cont,
-                "Conectividad: débilmente conectado",
-                debil.evaluarConectividad().equals("Débilmente conectado")
+                "Conectividad: débilmente conectado (8 nodos)",
+                g.evaluarConectividad().equals("Débilmente conectado")
         );
 
-        // 11. Grafo desconectado
         GrafoPonderado desconectado = new GrafoPonderado();
-        agregarVertices(desconectado, "1", "2", "3");
+
+        agregarVertices(
+                desconectado,
+                "1", "2", "3", "4", "5", "6", "7", "8"
+        );
 
         desconectado.agregarArista("1", "2", 1);
+        desconectado.agregarArista("2", "3", 1);
+        desconectado.agregarArista("3", "4", 1);
+        desconectado.agregarArista("4", "5", 1);
+        desconectado.agregarArista("5", "6", 1);
+        desconectado.agregarArista("6", "7", 1);
 
         registrar(
                 sb,
                 cont,
-                "Conectividad: desconectado",
+                "Conectividad: desconectado (8 nodos, nodo 8 aislado)",
                 desconectado.evaluarConectividad().equals("Desconectado")
         );
 
-        // 12. Destruir grafo
         GrafoPonderado destruir = new GrafoPonderado();
-        agregarVertices(destruir, "A", "B");
 
-        destruir.agregarArista("A", "B", 2);
+        agregarVertices(
+                destruir,
+                "1", "2", "3", "4", "5", "6", "7", "8"
+        );
+
+        destruir.agregarArista("1", "2", 1);
+        destruir.agregarArista("2", "3", 1);
+        destruir.agregarArista("3", "4", 1);
+        destruir.agregarArista("4", "5", 1);
+        destruir.agregarArista("5", "6", 1);
+        destruir.agregarArista("6", "7", 1);
+        destruir.agregarArista("7", "8", 1);
+        destruir.agregarArista("8", "1", 1);
+
         destruir.destruirGrafo();
 
         registrar(
                 sb,
                 cont,
                 "Destruir grafo y quedar vacío",
-                destruir.estaVacio() && destruir.cantidadAristas() == 0
+                destruir.estaVacio()
+                        && destruir.cantidadVertices() == 0
+                        && destruir.cantidadAristas() == 0
         );
 
-        // 13. Validaciones
         boolean validaciones =
                 captura(() -> {
                     new Vertice(" ", "X", "Y", "Z", 5);
@@ -193,12 +228,24 @@ public class Pruebas {
                 })
                 && captura(() -> {
                     GrafoPonderado gp = new GrafoPonderado();
-                    gp.agregarVertice(new Vertice("a", "A", "Terminal", "Norte", 1));
-                    gp.agregarArista("a", "a", -3);
+
+                    gp.agregarVertice(
+                            new Vertice("a", "A", "Terminal", "Norte", 1)
+                    );
+
+                    gp.agregarVertice(
+                            new Vertice("b", "B", "Terminal", "Norte", 1)
+                    );
+
+                    gp.agregarArista("a", "b", Double.NEGATIVE_INFINITY);
                 })
                 && captura(() -> {
                     GrafoPonderado gp = new GrafoPonderado();
-                    gp.agregarVertice(new Vertice("a", "A", "Terminal", "Norte", 1));
+
+                    gp.agregarVertice(
+                            new Vertice("a", "A", "Terminal", "Norte", 1)
+                    );
+
                     gp.agregarArista("a", "b", 2);
                 })
                 && captura(() -> {
@@ -212,24 +259,28 @@ public class Pruebas {
                 validaciones
         );
 
-        sb.append("\nResumen: ")
-          .append(cont[0])
-          .append(" pruebas pasaron, ")
-          .append(cont[1])
-          .append(" fallaron.\n");
+        sb.append('\n');
+        sb.append("Resumen: ")
+                .append(cont[0])
+                .append(" pruebas pasaron, ")
+                .append(cont[1])
+                .append(" fallaron.")
+                .append('\n');
 
         return sb.toString();
     }
 
     private static void agregarVertices(GrafoPonderado g, String... ids) {
         for (String id : ids) {
-            g.agregarVertice(new Vertice(
-                    id,
-                    "Nodo " + id,
-                    "Terminal",
-                    "Zona " + id,
-                    10.0
-            ));
+            g.agregarVertice(
+                    new Vertice(
+                            id,
+                            "Nodo " + id,
+                            "Terminal",
+                            "Zona " + id,
+                            10.0
+                    )
+            );
         }
     }
 
@@ -242,8 +293,15 @@ public class Pruebas {
         }
     }
 
-    private static void registrar(StringBuilder sb, int[] cont, String nombre, boolean ok) {
-        sb.append(ok ? "[PASS] " : "[FAIL] ").append(nombre).append('\n');
+    private static void registrar(
+            StringBuilder sb,
+            int[] cont,
+            String nombre,
+            boolean ok
+    ) {
+        sb.append(ok ? "[PASS] " : "[FAIL] ")
+                .append(nombre)
+                .append('\n');
 
         if (ok) {
             cont[0]++;
